@@ -1,18 +1,93 @@
-<p>
-  <strong>Title:</strong>
-  <%= @article.title %>
-</p>
- 
-<p>
-  <strong>Text:</strong>
-  <%= @article.text %>
-</p>
- 
-<h2>Comments</h2>
-<%= render @article.comments %>
- 
-<h2>Add a comment:</h2>
-<%= render 'comments/form' %>
- 
-<%= link_to 'Edit', edit_article_path(@article) %> |
-<%= link_to 'Back', articles_path %>
+<% content_for :title, (@article.seo_title.presence || @article.title) %>
+<% content_for :meta_description, (@article.seo_description.presence || truncate(strip_tags(@article.description), length: 155)) %>
+<% content_for :canonical_url, (@article.canonical_url.presence || article_url(@article)) %>
+<h1 class="text-center"><%= @article.title %></h1>
+<p class="text-center"><strong>Status:</strong> <%= @article.status.humanize %></p>
+<div class="well col-xs-8 col-xs-offset-2">
+  <% if @article.user %>
+      <ul class="listing">
+        <div class="row center">
+          <div class="col-md-4 col-md-offset-4">
+            <li>Created by:</li>
+            <li><%= link_to gravatar_for(@article.user), user_path(@article.user) %></li>
+            <li class="article-title">
+              <%= link_to @article.user.username, user_path(@article.user) %>
+            </li>
+            <li><small>
+              <%= pluralize(@article.user.articles.count, "article") if @article.user.articles %>
+            </small></li>
+          </div>
+        </div>
+      </ul>
+  <% end %>
+  <h4 class="center description"><strong>Description:</strong></h4>
+
+  <% if @article.categories.any? %>
+      <p>Categories: <%= render @article.categories %></p>
+  <% end %>
+  <% if @article.tags.any? %>
+      <p>Tags: <%= safe_join(@article.tags.map { |tag| link_to(tag.name, articles_path(tag: tag.slug)) }, ", ") %></p>
+  <% end %>
+
+  <hr>
+  <%= simple_format(sanitize(@article.description, tags: %w[p br strong em a ul ol li blockquote code], attributes: %w[href title])) %>
+  <% if @article.media_assets.any? %>
+    <section aria-labelledby="media-heading">
+      <h3 id="media-heading">Article media</h3>
+      <% @article.media_assets.each do |asset| %>
+        <figure>
+          <%= image_tag article_media_asset_path(@article, asset), alt: asset.alt_text, class: "article-media" %>
+          <% if logged_in? && (current_user == @article.user || current_user.administrator?) %>
+            <%= button_to "Remove media", article_media_asset_path(@article, asset), method: :delete, class: "btn btn-xs btn-danger" %>
+          <% end %>
+        </figure>
+      <% end %>
+    </section>
+  <% end %>
+  <% if logged_in? && (current_user == @article.user || current_user.administrator?) && %w[draft changes_requested].include?(@article.status) %>
+    <section aria-labelledby="upload-heading">
+      <h3 id="upload-heading">Upload accessible media</h3>
+      <%= form_tag article_media_assets_path(@article), multipart: true do %>
+        <%= label_tag :file, "JPEG, PNG, or WebP (maximum 5 MiB)" %>
+        <%= file_field_tag :file, required: true, accept: "image/jpeg,image/png,image/webp" %>
+        <%= label_tag :alt_text, "Alternative text" %>
+        <%= text_field_tag :alt_text, nil, required: true, maxlength: 240 %>
+        <%= submit_tag "Upload media", class: "btn btn-primary" %>
+      <% end %>
+    </section>
+  <% end %>
+  <% if logged_in? && (current_user == @article.user || current_user.editor?) %>
+    <section aria-labelledby="workflow-heading">
+      <h3 id="workflow-heading">Editorial workflow</h3>
+      <% if %w[draft changes_requested].include?(@article.status) %>
+        <%= button_to "Submit for review", submit_for_review_article_path(@article), method: :post, class: "btn btn-primary" %>
+      <% end %>
+      <% if current_user.editor? && @article.status == "in_review" && current_user != @article.user %>
+        <%= button_to "Approve", approve_article_path(@article), method: :post, class: "btn btn-success" %>
+        <%= form_tag request_changes_article_path(@article), method: :post do %>
+          <%= label_tag :reason, "Required changes" %><%= text_field_tag :reason, nil, required: true %>
+          <%= submit_tag "Request changes", class: "btn btn-warning" %>
+        <% end %>
+      <% end %>
+      <% if current_user.editor? && @article.status == "approved" && current_user != @article.user %>
+        <%= button_to "Publish", publish_article_path(@article), method: :post, class: "btn btn-success" %>
+      <% end %>
+    </section>
+  <% end %>
+  <div class="article-actions">
+    <% if logged_in? && (current_user == @article.user || current_user.admin?) %>
+        <%= link_to "Edit this article", edit_article_path(@article), class: "btn btn-xs btn-primary" %>
+        <%= link_to "Delete this article", article_path(@article), method: :delete,
+                    data: { confirm: "Are you sure you want to delete the article?"},
+                    class: "btn btn-xs btn-danger" %>
+    <% end %>
+    <%= link_to "View all articles", articles_path, class: "btn btn-xs btn-success" %>
+  </div>
+  <% if @article.publicly_visible? || current_user&.editor? %>
+    <section aria-labelledby="comments-heading">
+      <h3 id="comments-heading">Comments</h3>
+      <%= render @comments %>
+      <%= render "comments/form", article: @article if @article.publicly_visible? %>
+    </section>
+  <% end %>
+</div>

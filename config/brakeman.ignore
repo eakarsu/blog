@@ -1,0 +1,9 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "fc7cb60e0f1ee4a9508c630e17cae8285522dac6ddf801b253dd9c1a096ddfae",
+      "note": "False positive: storage keys must match a server-generated numeric-id/UUID/image-extension pattern, are cleanpath-resolved beneath MEDIA_ROOT, are fetched through the article association, and have traversal/failure tests."
+    }
+  ],
+  "updated": "2026-07-19 21:24:00 -0400"
+}

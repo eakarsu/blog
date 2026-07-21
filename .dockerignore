@@ -1,0 +1,13 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+.bundle
+db/*.sqlite3*
+log/*
+tmp/*
+public/assets/*
+storage/media/*
+test
+_COMPLETENESS_REVIEW.md

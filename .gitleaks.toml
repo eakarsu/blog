@@ -1,0 +1,13 @@
+title = "Blog secret detection"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Exclude ignored runtime and generated output only"
+paths = [
+  '''(^|/)log/''',
+  '''(^|/)tmp/''',
+  '''(^|/)public/assets/''',
+  '''(^|/)storage/media/''',
+]

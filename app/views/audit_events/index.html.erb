@@ -1,0 +1,19 @@
+<h1>Audit events</h1>
+<div class="table-responsive">
+  <table class="table table-striped">
+    <caption>Newest attributable publishing and moderation events</caption>
+    <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Subject</th><th>Request</th></tr></thead>
+    <tbody>
+      <% @audit_events.each do |event| %>
+        <tr>
+          <td><%= event.created_at.iso8601 %></td>
+          <td><%= event.actor&.email || "system" %></td>
+          <td><%= event.action %></td>
+          <td><%= "#{event.subject_type} ##{event.subject_id}" %></td>
+          <td><%= event.request_id.presence || "—" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+<%= will_paginate @audit_events %>

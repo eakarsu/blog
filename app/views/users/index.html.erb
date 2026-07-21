@@ -1,0 +1,17 @@
+<h1 class="text-center">Manage users</h1>
+<%= will_paginate @users %>
+<div class="row">
+  <% @users.each do |user| %>
+    <article class="well col-md-6" aria-label="User <%= user.username %>">
+      <%= link_to gravatar_for(user), user_path(user) %>
+      <h2 class="article-title"><%= link_to user.username, user_path(user) %></h2>
+      <p><%= user.role.humanize %> · <%= user.active? ? "Active" : "Inactive" %> · <%= pluralize(user.articles.count, "article") %></p>
+      <% if user.active? && user != current_user %>
+        <%= link_to "Deactivate this user", user_path(user), method: :delete,
+                    data: { confirm: "Deactivate this account while retaining its authored records?" },
+                    class: "btn btn-xs btn-danger" %>
+      <% end %>
+    </article>
+  <% end %>
+</div>
+<%= will_paginate @users %>

@@ -1,14 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Blog</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="<%= content_for?(:meta_description) ? yield(:meta_description) : 'Independent articles from Blog authors' %>">
+  <link rel="alternate" type="application/atom+xml" title="Blog feed" href="<%= feed_path(format: :atom) %>">
+  <link rel="canonical" href="<%= content_for?(:canonical_url) ? yield(:canonical_url) : root_url %>">
+  <title><%= content_for?(:title) ? yield(:title) : "Blog" %></title>
   <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
   <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
   <%= csrf_meta_tags %>
 </head>
 <body>
+<a class="sr-only sr-only-focusable" href="#main-content">Skip to main content</a>
+<%= render 'layouts/navigation' %>
+<%= render 'layouts/messages' %>
+<main id="main-content" class="container" tabindex="-1">
+  <%= yield %>
+</main>
+<%= render 'layouts/footer' %>
 
-<%= yield %>
+<%= debug(params) if Rails.env.development? %>
 
 </body>
 </html>

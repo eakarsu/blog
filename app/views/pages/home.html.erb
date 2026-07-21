@@ -1,0 +1,6 @@
+<div class="center jumbotron">
+  <h1>Blog</h1>
+  <p>Independent writing with accountable editorial review.</p>
+  <%= link_to "Read published articles", articles_path, class: "btn btn-primary btn-lg" %>
+  <%= link_to "Create an author account", signup_path, class: "btn btn-default btn-lg" unless logged_in? %>
+</div>

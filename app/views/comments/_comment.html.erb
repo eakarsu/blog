@@ -1,15 +1,16 @@
-<p>
-  <strong>Commenter:</strong>
-  <%= comment.commenter %>
-</p>
- 
-<p>
-  <strong>Comment:</strong>
-  <%= comment.body %>
-</p>
-
-<p>
-  <%= link_to 'Destroy Comment', [comment.article, comment],
-               method: :delete,
-               data: { confirm: 'Are you sure?' } %>
-</p>
+<article class="comment" aria-label="Comment by <%= comment.commenter %>">
+  <p><strong><%= comment.commenter %></strong></p>
+  <%= simple_format(comment.body) %>
+  <% if current_user&.editor? %>
+    <p><small>Status: <%= comment.status.humanize %></small></p>
+    <% if comment.status == "pending" %>
+      <%= button_to "Approve comment", approve_article_comment_path(comment.article, comment), method: :post, class: "btn btn-xs btn-success" %>
+      <%= form_tag reject_article_comment_path(comment.article, comment), method: :post do %>
+        <%= label_tag :reason, "Rejection reason" %>
+        <%= text_field_tag :reason, nil, required: true, maxlength: 240 %>
+        <%= submit_tag "Reject comment", class: "btn btn-xs btn-warning" %>
+      <% end %>
+    <% end %>
+    <%= button_to "Remove comment", article_comment_path(comment.article, comment), method: :delete, class: "btn btn-xs btn-danger" %>
+  <% end %>
+</article>

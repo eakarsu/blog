@@ -1,0 +1,45 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: blog_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/blog_test
+      SECRET_KEY_BASE: test-ci-secret-key-base-not-used-outside-ci
+      APP_HOST: example.test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4.4"
+          bundler-cache: true
+      - run: bundle exec rails db:drop
+      - run: bundle exec rails db:create
+      - run: bundle exec rails db:migrate
+      - run: bundle exec rails db:rollback STEP=1
+      - run: bundle exec rails db:migrate
+      - run: bundle exec rails test
+      - run: bundle exec rails zeitwerk:check
+      - run: bundle exec brakeman --no-pager --ensure-latest --ignore-config config/brakeman.ignore --ensure-ignore-notes --ensure-no-obsolete-ignore-entries
+      - run: bundle exec bundler-audit check --update
+      - run: RAILS_ENV=production SECRET_KEY_BASE=ci-build-only-value-7f4a8c2d1e6b9f305d8a4c7e2b6f1a9d5c8e3b7f2a6d9c4e1b5f8a3d7c2e6b9f DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/blog_test bundle exec rails assets:precompile

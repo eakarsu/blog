@@ -1,0 +1,3 @@
+# Rails 4 generated development/test secret_key_base values from the 2015 scaffold.
+a6270de8ebbe2b424a43d09c1c86e0f3d6036e62:config/secrets.yml:generic-api-key:14
+a6270de8ebbe2b424a43d09c1c86e0f3d6036e62:config/secrets.yml:generic-api-key:17

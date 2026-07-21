@@ -1,13 +1,15 @@
-<%= form_for([@article, @article.comments.build]) do |f| %>
-  <p>
-    <%= f.label :commenter %><br>
-    <%= f.text_field :commenter %>
-  </p>
-  <p>
-    <%= f.label :body %><br>
-    <%= f.text_area :body %>
-  </p>
-  <p>
-    <%= f.submit %>
-  </p>
+<%= form_for([article, article.comments.build]) do |f| %>
+  <div class="form-group">
+    <%= f.label :commenter, "Name" %>
+    <%= f.text_field :commenter, required: true, maxlength: 80, class: "form-control", autocomplete: "name" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :body, "Comment" %>
+    <%= f.text_area :body, required: true, maxlength: 2_000, rows: 5, class: "form-control" %>
+  </div>
+  <div class="form-group honeypot" aria-hidden="true">
+    <%= label_tag "comment_website", "Leave this blank" %>
+    <%= text_field_tag "comment[website]", nil, id: "comment_website", tabindex: -1, autocomplete: "off" %>
+  </div>
+  <%= f.submit "Submit for moderation", class: "btn btn-primary" %>
 <% end %>
