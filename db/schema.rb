@@ -13,6 +13,7 @@
 ActiveRecord::Schema[8.0].define(version: 2026_07_19_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pgcrypto"
 
   create_table "article_categories", force: :cascade do |t|
     t.bigint "article_id", null: false
@@ -45,7 +46,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_19_000000) do
     t.index ["tag_id"], name: "index_article_tags_on_tag_id"
   end
 
-  create_table "articles", force: :cascade do |t|
+  create_table "articles", id: :serial, force: :cascade do |t|
     t.string "title", null: false
     t.text "description", null: false
     t.datetime "created_at", precision: nil
@@ -84,7 +85,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_19_000000) do
     t.index ["name"], name: "index_categories_on_name", unique: true
   end
 
-  create_table "comments", force: :cascade do |t|
+  create_table "comments", id: :serial, force: :cascade do |t|
     t.string "commenter", null: false
     t.text "body", null: false
     t.integer "article_id", null: false
@@ -123,6 +124,34 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_19_000000) do
     t.index ["key_hash", "operation", "occurred_at"], name: "idx_rate_limits"
   end
 
+  create_table "runtime_ai_interactions", force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.text "feature", null: false
+    t.jsonb "input", null: false
+    t.jsonb "output", null: false
+    t.text "model", null: false
+    t.jsonb "provider_receipt", default: {}, null: false
+    t.timestamptz "created_at", default: -> { "now()" }, null: false
+    t.index ["user_id", "created_at"], name: "runtime_ai_interactions_user_idx", order: { created_at: :desc }
+  end
+
+  create_table "runtime_app_sessions", primary_key: "token_hash", id: :text, force: :cascade do |t|
+    t.uuid "user_id", null: false
+    t.timestamptz "expires_at", null: false
+    t.timestamptz "created_at", default: -> { "now()" }, null: false
+  end
+
+  create_table "runtime_app_users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "email", null: false
+    t.text "password_hash", null: false
+    t.text "display_name", null: false
+    t.text "role", default: "user", null: false
+    t.boolean "active", default: true, null: false
+    t.timestamptz "created_at", default: -> { "now()" }, null: false
+
+    t.unique_constraint ["email"], name: "runtime_app_users_email_key"
+  end
+
   create_table "tags", force: :cascade do |t|
     t.string "name", null: false
     t.string "slug", null: false
@@ -157,4 +186,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_19_000000) do
   add_foreign_key "comments", "users", column: "moderated_by_id"
   add_foreign_key "media_assets", "articles"
   add_foreign_key "media_assets", "users", column: "uploaded_by_id"
+  add_foreign_key "runtime_ai_interactions", "runtime_app_users", column: "user_id", name: "runtime_ai_interactions_user_id_fkey"
+  add_foreign_key "runtime_app_sessions", "runtime_app_users", column: "user_id", name: "runtime_app_sessions_user_id_fkey", on_delete: :cascade
 end
