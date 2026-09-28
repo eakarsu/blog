@@ -1,4 +1,4 @@
-<h1 align="center">Log in</h1>
+<h1 align="center">Sign In</h1>
 <%= form_for(:session, :html => {class: "form-horizontal", role: "form"}, url: login_path) do |f| %>
     <div class="form-group">
       <div class="control-label col-sm-2">
@@ -18,10 +18,35 @@
     </div>
     <div class="form-group">
       <div class="col-sm-offset-2 col-sm-10">
-        <%= f.submit "Log in", class: 'btn btn-primary btn-lg' %>
+        <button type="button" id="auto-fill-demo-credentials" class="btn btn-default btn-lg">Auto Fill Demo Credentials</button>
+        <%= f.submit "Sign In", class: 'btn btn-primary btn-lg' %>
       </div>
     </div>
 <% end %>
+<div id="demo-credentials-error" class="alert alert-danger col-sm-8 col-sm-offset-2" role="alert" hidden></div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var button = document.getElementById("auto-fill-demo-credentials");
+    var error = document.getElementById("demo-credentials-error");
+    if (!button) return;
+    button.addEventListener("click", async function () {
+      button.disabled = true;
+      error.hidden = true;
+      try {
+        var response = await fetch("/api/auth/demo-credentials", { cache: "no-store", credentials: "same-origin" });
+        var payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Demo credentials unavailable");
+        document.getElementById("session_email").value = payload.email;
+        document.getElementById("session_password").value = payload.password;
+      } catch (reason) {
+        error.textContent = reason.message || "Demo credentials unavailable";
+        error.hidden = false;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script>
 <div class="col-xs-4 col-xs-offset-4">
   [ <%= link_to "Cancel request and return to articles listing", articles_path %> ]
 </div>

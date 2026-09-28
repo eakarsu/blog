@@ -30,6 +30,7 @@ Rails.application.routes.draw do
   resources :users, except: [:new]
   get 'login', to: 'sessions#new'
   post 'login', to: 'sessions#create'
+  get 'api/auth/demo-credentials', to: 'sessions#demo_credentials'
   get 'api/auth/me', to: 'sessions#show'
   delete 'logout', to: 'sessions#destroy'
   resources :categories, except: [:destroy]

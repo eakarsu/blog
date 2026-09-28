@@ -46,6 +46,18 @@ class SessionsController < ApplicationController
     end
   end
 
+  def demo_credentials
+    enabled = ENV.fetch("ENABLE_DEMO_CREDENTIAL_AUTOFILL", "true") == "true"
+    return render json: { error: "Not found" }, status: :not_found unless Rails.env.development? && enabled
+
+    email = ENV["DEMO_EMAIL"].presence || ENV["PROVISION_ADMIN_EMAIL"].presence || ENV["ADMIN_EMAIL"].presence
+    password = ENV["DEMO_PASSWORD"].presence || ENV["PROVISION_ADMIN_PASSWORD"].presence || ENV["ADMIN_PASSWORD"].presence
+    return render json: { error: "Demo credentials unavailable" }, status: :service_unavailable if email.blank? || password.blank?
+
+    response.set_header("Cache-Control", "no-store")
+    render json: { email: email, password: password }
+  end
+
   def destroy
     AuditEvent.record!(actor: current_user, action: "session.destroyed", subject: current_user, request_id: request.request_id) if current_user
     reset_session
