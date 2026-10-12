@@ -22,7 +22,7 @@
 <a class="sr-only sr-only-focusable" href="#main-content">Skip to main content</a>
 <%= render 'layouts/navigation' %>
 <%= render 'layouts/messages' %>
-<div class="codex-rails-shell"><aside class="codex-rails-sidebar" aria-label="Application navigation"><strong>Blog</strong><nav aria-label="Sections">
+<div class="codex-rails-shell"><aside class="codex-rails-sidebar" aria-label="Application navigation"><strong>Blog</strong><nav aria-label="Sections"><% if ENV['BACKEND_PORT'].to_i > 0 %><a href="http://127.0.0.1:<%= ENV['BACKEND_PORT'].to_i %>/ai-workspace" target="_blank" rel="noopener">AI workspace</a><% end %>
 <%= link_to "Home", root_path %>
 <%= link_to "Articles", articles_path %>
 <%= link_to "Categories", categories_path %>

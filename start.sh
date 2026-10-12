@@ -20,6 +20,8 @@ for assigned_port in "$BACKEND_PORT" "$FRONTEND_PORT";do [[ "$assigned_port" =~ 
 [ -d "$PROJECT_DIR/runtime" ]&&[ -f "$PROJECT_DIR/Gemfile" ]||{ echo "Runtime dependencies are missing" >&2;exit 1; }
 export RUNTIME_PROJECT_NAME=blog RUNTIME_AI_ENDPOINT=/api/ai/editorial-review RUNTIME_AI_FEATURE=editorial-review
 export RUNTIME_AI_SYSTEM_PROMPT='You are an editorial operations assistant. Produce an audience-aware review with factual verification, source checks, risks, and publication gates.'
+echo "AI workspace: http://127.0.0.1:$BACKEND_PORT/ai-workspace"
+export VITE_NATIVE_AI_WORKSPACE_URL="http://127.0.0.1:$BACKEND_PORT/ai-workspace" REACT_APP_NATIVE_AI_WORKSPACE_URL="http://127.0.0.1:$BACKEND_PORT/ai-workspace"
 node "$PROJECT_DIR/runtime/setup.mjs"
 CHILD_PIDS=()
 (cd "$PROJECT_DIR"&&exec node runtime/api.mjs)&CHILD_PIDS+=("$!")
